@@ -18,11 +18,13 @@ sheet = spreadsheet.worksheet("DailyLog")
 
 # Ambil data dari environment CircleCI
 timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-branch = os.getenv('CIRCLE_BRANCH', 'unknown')
+branch = os.getenv('CIRCLE_BRANCH', '"-"')
 status = os.getenv('DEPLOY_STATUS', 'unknown')  # set dari job sebelumnya
 print("Status Deploy:", status)
-job_name = os.getenv('CIRCLE_JOB', 'unknown')
+job_name = os.getenv('CIRCLE_JOB', '"-"')
 message = os.getenv('DEPLOY_MESSAGE', '')
+author = os.getenv("CIRCLE_USERNAME", "-")
+build_url = os.getenv("CIRCLE_BUILD_URL", "-")
 
 # Tambahkan baris ke spreadsheet
 row = [timestamp, branch, status, job_name, message]
