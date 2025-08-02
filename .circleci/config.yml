@@ -20,10 +20,11 @@ jobs:
           name: Simpan Status Deploy
           command: |
             if [ -f deploy-status.txt ]; then
-              cat deploy-status.txt >> $BASH_ENV
+              DEPLOY_STATUS=$(cat deploy-status.txt | grep DEPLOY_STATUS | cut -d '=' -f2)
             else
-              echo "DEPLOY_STATUS=success" >> $BASH_ENV
+              DEPLOY_STATUS="success"
             fi
+            echo "export DEPLOY_STATUS=$DEPLOY_STATUS" >> $BASH_ENV
             source $BASH_ENV
 
       - run:
