@@ -1,21 +1,24 @@
 version: 2.1
 
 jobs:
-  build:
+  log-deployment:
     docker:
-      - image: cimg/node:18.17.0
+      - image: cimg/python:3.10
     steps:
       - checkout
       - run:
-          name: Print Deployment Log
-          command: node index.js
-      - run:
-          name: Log to Spreadsheet
+          name: Install dependencies
           command: |
-            curl -X POST https://script.google.com/macros/s/YOUR_DEPLOY_HOOK_ID/exec \
-            -d "status=success&timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+            pip install gspread oauth2client
+      - run:
+          name: Log to Google Sheets
+          command: |
+            export DEPLOY_STATUS="SUCCESS"
+            export DEPLOY_MESSAGE="Deployed without issue"
+            python logToSpreadsheet.py
 
 workflows:
-  deploy-log:
+  version: 2
+  deploy_and_log:
     jobs:
-      - build
+      - log-deployment
