@@ -27,10 +27,11 @@ jobs:
             echo "export DEPLOY_STATUS=$DEPLOY_STATUS" >> $BASH_ENV
             source $BASH_ENV
       - run:
-          name: Install Python Dependencies
+          name: Install Python & pip Dependencies
           command: |
-            python3 -m pip install --upgrade pip
-            pip install gspread oauth2client
+            sudo apt-get update
+            sudo apt-get install -y python3-pip
+            pip3 install gspread oauth2client
 
       - run:
           name: Logging ke Google Sheet
