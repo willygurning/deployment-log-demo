@@ -1,25 +1,30 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
+import os
+import json
 
-# Inisialisasi koneksi ke Google Sheets
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("circleci-logger-5cab946cfc5c.json", scope)
+# Load credentials dari environment variable
+creds_dict = json.loads(os.environ['google_credentials'])
+
+# Setup koneksi dengan Google Sheets
+scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(creds)
 
-# Buka spreadsheet dan worksheet
-spreadsheet = client.open_by_key("15z2Dyl4k1OOobdU_54UqPrWCKmpPwfSe056NpyySoxQ")
-worksheet = spreadsheet.worksheet("Daily Log")  # Ganti sesuai nama sheet/tab kamu
+# Ganti ini dengan nama file dan sheet kamu
+spreadsheet = client.open("Deployment Quality Test")
+sheet = spreadsheet.DailyLog  # atau .worksheet("Nama Sheet")
 
-# Data log deployment
-deployment_data = [
-    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # Timestamp
-    "Payment Service",                             # Nama service
-    "Success",                                     # Status deployment: Success / Failed / Hotfix
-    "No issue detected"                            # Keterangan tambahan
-]
+# Ambil data dari environment CircleCI
+timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+branch = os.getenv('CIRCLE_BRANCH', 'unknown')
+status = os.getenv('DEPLOY_STATUS', 'unknown')  # set dari job sebelumnya
+job_name = os.getenv('CIRCLE_JOB', 'unknown')
+message = os.getenv('DEPLOY_MESSAGE', '')
 
-# Tambahkan ke baris paling bawah (append)
-worksheet.append_row(deployment_data)
+# Tambahkan baris ke spreadsheet
+row = [timestamp, branch, status, job_name, message]
+sheet.append_row(row)
 
-print("Log deployment berhasil ditambahkan!")
+print("✅ Deployment log successfully written to Google Sheets.")
