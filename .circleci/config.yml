@@ -13,19 +13,13 @@ jobs:
       - run:
           name: Simulasi deploy (bisa gagal)
           command: |
-            echo "Mulai deploy"
-            # Ubah ini jadi `false` untuk simulasi gagal
-            false
-      - run:
-          name: Tulis status ke file
-          when: always
-          command: |
-            if [ "$CIRCLE_JOB" == "deploy" ]; then
-              if [ -f /tmp/deploy-failed ]; then
-                echo "failed" > deploy_status.txt
-              else
-                echo "success" > deploy_status.txt
-              fi
+            echo "Simulasi deploy dimulai"
+            # Simulasi deploy gagal
+            ./run-deploy.sh || echo "DEPLOY_FAILED" > deploy_status.txt
+            if [ ! -f deploy_status.txt ]; then
+              echo "success" > deploy_status.txt
+            else
+              echo "failed" > deploy_status.txt
             fi
       - persist_to_workspace:
           root: .
@@ -51,8 +45,7 @@ workflows:
   version: 2
   deploy_and_log:
     jobs:
-      - deploy:
-          continue_on_error: true  # Ini penting biar job berikut tetap jalan meski deploy gagal
+      - deploy
       - log_to_spreadsheet:
           requires:
             - deploy
