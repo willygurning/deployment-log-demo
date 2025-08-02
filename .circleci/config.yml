@@ -1,51 +1,37 @@
 version: 2.1
 
-executors:
-  python-executor:
-    docker:
-      - image: cimg/python:3.10
-
 jobs:
   deploy:
-    executor: python-executor
+    docker:
+      - image: cimg/node:18.17.1
     steps:
       - checkout
-      - run:
-          name: Simulasi deploy (bisa gagal)
-          command: |
-            echo "Simulasi deploy dimulai"
-            # Simulasi deploy gagal
-            ./run-deploy.sh || echo "DEPLOY_FAILED" > deploy_status.txt
-            if [ ! -f deploy_status.txt ]; then
-              echo "success" > deploy_status.txt
-            else
-              echo "failed" > deploy_status.txt
-            fi
-      - persist_to_workspace:
-          root: .
-          paths:
-            - deploy_status.txt
 
-  log_to_spreadsheet:
-    executor: python-executor
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
       - run:
-          name: Install dependencies
-          command: pip install gspread oauth2client
+          name: Install Dependencies
+          command: npm install
+
       - run:
-          name: Jalankan logToSpreadsheet
+          name: Simulasi Deploy (bisa gagal)
           command: |
-            export DEPLOY_STATUS=$(cat deploy_status.txt)
-            python logToSpreadsheet.py
+            node index.js || true
+
+      - run:
+          name: Simpan Status Deploy
+          command: |
+            if [ -f deploy-status.txt ]; then
+              cat deploy-status.txt >> $BASH_ENV
+            else
+              echo "DEPLOY_STATUS=success" >> $BASH_ENV
+            fi
+            source $BASH_ENV
+
+      - run:
+          name: Logging ke Google Sheet
+          command: python3 logToSpreadsheet.py
 
 workflows:
   version: 2
   deploy_and_log:
     jobs:
       - deploy
-      - log_to_spreadsheet:
-          requires:
-            - deploy

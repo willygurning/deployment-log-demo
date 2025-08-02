@@ -25,9 +25,10 @@ job_name = os.getenv('CIRCLE_JOB', '"-"')
 message = os.getenv('DEPLOY_MESSAGE', '')
 author = os.getenv("CIRCLE_USERNAME", "-")
 build_url = os.getenv("CIRCLE_BUILD_URL", "-")
+error_message = os.getenv("DEPLOY_ERROR", "-")
 
 # Tambahkan baris ke spreadsheet
-row = [timestamp, branch, status, job_name, message]
+row = [timestamp, branch, status, job_name, message, author, build_url, error_message]
 sheet.append_row(row)
 
 print("✅ Deployment log successfully written to Google Sheets.")
