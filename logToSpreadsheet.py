@@ -14,7 +14,7 @@ client = gspread.authorize(creds)
 
 # Ganti ini dengan nama file dan sheet kamu
 spreadsheet = client.open("Deployment Quality Test")
-sheet = spreadsheet.DailyLog  # atau .worksheet("Nama Sheet")
+sheet = spreadsheet..worksheet("DailyLog")
 
 # Ambil data dari environment CircleCI
 timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
