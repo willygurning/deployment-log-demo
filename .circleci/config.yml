@@ -14,16 +14,18 @@ jobs:
           name: Simulasi deploy (bisa gagal)
           command: |
             echo "Mulai deploy"
-            # Simulasi kegagalan (ubah ke `true` kalau mau sukses)
+            # Ubah ini jadi `false` untuk simulasi gagal
             false
       - run:
-          name: Set status deploy ke file
+          name: Tulis status ke file
           when: always
           command: |
-            if [ $? -eq 0 ]; then
-              echo "success" > deploy_status.txt
-            else
-              echo "failed" > deploy_status.txt
+            if [ "$CIRCLE_JOB" == "deploy" ]; then
+              if [ -f /tmp/deploy-failed ]; then
+                echo "failed" > deploy_status.txt
+              else
+                echo "success" > deploy_status.txt
+              fi
             fi
       - persist_to_workspace:
           root: .
@@ -37,10 +39,10 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: Install deps
+          name: Install dependencies
           command: pip install gspread oauth2client
       - run:
-          name: Log ke Google Spreadsheet
+          name: Jalankan logToSpreadsheet
           command: |
             export DEPLOY_STATUS=$(cat deploy_status.txt)
             python logToSpreadsheet.py
@@ -49,7 +51,8 @@ workflows:
   version: 2
   deploy_and_log:
     jobs:
-      - deploy
+      - deploy:
+          continue_on_error: true  # Ini penting biar job berikut tetap jalan meski deploy gagal
       - log_to_spreadsheet:
           requires:
             - deploy
