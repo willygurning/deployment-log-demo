@@ -1,38 +1,48 @@
 version: 2.1
 
+executors:
+  python-executor:
+    docker:
+      - image: cimg/python:3.10
+
 jobs:
   deploy:
-    docker:
-      - image: cimg/python:3.10
+    executor: python-executor
     steps:
       - checkout
       - run:
-          name: Simulasi deploy
+          name: Simulasi deploy (bisa gagal)
           command: |
-            echo "Mulai deploy..."
-            # Simulasi: Gagal dengan exit 1
-            ./deploy.sh || echo "failed" > deploy_status.txt
-
+            echo "Mulai deploy"
+            # Simulasi kegagalan (ubah ke `true` kalau mau sukses)
+            false
       - run:
-          name: Set deploy status
+          name: Set status deploy ke file
+          when: always
           command: |
-            if [ -f deploy_status.txt ]; then
-              echo 'export DEPLOY_STATUS=failed' >> $BASH_ENV
+            if [ $? -eq 0 ]; then
+              echo "success" > deploy_status.txt
             else
-              echo 'export DEPLOY_STATUS=success' >> $BASH_ENV
+              echo "failed" > deploy_status.txt
             fi
+      - persist_to_workspace:
+          root: .
+          paths:
+            - deploy_status.txt
 
   log_to_spreadsheet:
-    docker:
-      - image: cimg/python:3.10
+    executor: python-executor
     steps:
       - checkout
+      - attach_workspace:
+          at: .
       - run:
-          name: Install dependencies
+          name: Install deps
           command: pip install gspread oauth2client
       - run:
-          name: Tulis log ke Google Spreadsheet
+          name: Log ke Google Spreadsheet
           command: |
+            export DEPLOY_STATUS=$(cat deploy_status.txt)
             python logToSpreadsheet.py
 
 workflows:
@@ -43,9 +53,3 @@ workflows:
       - log_to_spreadsheet:
           requires:
             - deploy
-          filters:
-            branches:
-              only: main
-          # Always jalan, walau deploy gagal
-          # CircleCI classic: pakai "when: always"
-          # Kalau pakai CircleCI >2.1, udah default behavior asalkan pakai `requires`

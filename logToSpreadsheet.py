@@ -20,6 +20,7 @@ sheet = spreadsheet.worksheet("DailyLog")
 timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 branch = os.getenv('CIRCLE_BRANCH', 'unknown')
 status = os.getenv('DEPLOY_STATUS', 'unknown')  # set dari job sebelumnya
+print("Status Deploy:", status)
 job_name = os.getenv('CIRCLE_JOB', 'unknown')
 message = os.getenv('DEPLOY_MESSAGE', '')
 
