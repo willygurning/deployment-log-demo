@@ -1,0 +1,21 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: cimg/node:18.17.0
+    steps:
+      - checkout
+      - run:
+          name: Print Deployment Log
+          command: node index.js
+      - run:
+          name: Log to Spreadsheet
+          command: |
+            curl -X POST https://script.google.com/macros/s/YOUR_DEPLOY_HOOK_ID/exec \
+            -d "status=success&timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
+workflows:
+  deploy-log:
+    jobs:
+      - build
