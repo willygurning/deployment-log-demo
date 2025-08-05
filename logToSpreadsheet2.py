@@ -49,7 +49,6 @@ for job in jobs:
 row = [
     status,
     duration,
-    project,
     job_name
 ]
 sheet.append_row(row)
