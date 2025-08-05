@@ -1,49 +1,22 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from datetime import datetime, timezone
+from datetime import datetime
 import os
 import json
 import requests
+import time
 
-# Load Google credentials dari environment
+# 1. Load Google credentials dari environment
 creds_dict = json.loads(os.environ['google_credentials'])
-
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(creds)
 
-# Inisialisasi Google Sheet
+# 2. Inisialisasi Google Sheet
 spreadsheet = client.open("Deployment Quality Test")
 sheet = spreadsheet.worksheet("DailyLog")
 
-# Fungsi tunggu sampai workflow selesai
-def get_final_workflow_status(workflow_id, token, max_wait_seconds=300, interval=5):
-    url = f"https://circleci.com/api/v2/workflow/{workflow_id}"
-    headers = {
-        "Circle-Token": token
-    }
-
-    waited = 0
-    while waited < max_wait_seconds:
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            raise Exception(f"Gagal mengambil status workflow: {response.text}")
-
-        data = response.json()
-        status = data.get("status", "unknown")
-
-        if status in ["success", "failed", "error", "failing", "canceled", "unauthorized"]:
-            return data
-
-        print(f"🔄 Workflow masih {status}, tunggu {interval} detik...")
-        time.sleep(interval)
-        waited += interval
-
-    raise TimeoutError(f"Workflow tidak selesai dalam {max_wait_seconds} detik.")
-
-# Ambil data akhir workflow
-workflow_data = get_final_workflow_status(workflow_id, circle_token)
-# Ambil environment variables dari CircleCI
+# 3. Ambil variabel dari environment
 timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 branch = os.getenv('CIRCLE_BRANCH', '-')
 commit = os.getenv('CIRCLE_SHA1', '-')
@@ -51,21 +24,43 @@ workflow_id = os.getenv('CIRCLE_WORKFLOW_ID', '-')
 project = os.getenv('CIRCLE_PROJECT_REPONAME', '-')
 author = os.getenv('CIRCLE_USERNAME', '-')
 build_url = os.getenv('CIRCLE_BUILD_URL', '-')
-circleci_token = os.getenv('circle_ci_api_token', None)
+circleci_token = os.getenv('CIRCLECI_API_TOKEN', None)
 
 if not circleci_token or not workflow_id:
     print("❌ API Token atau Workflow ID tidak tersedia")
     exit(1)
 
-# Panggil CircleCI API untuk ambil semua job
+# 4. Fungsi: Tunggu hingga workflow selesai
+def get_final_workflow_status(workflow_id, token, max_wait_seconds=300, interval=5):
+    url = f"https://circleci.com/api/v2/workflow/{workflow_id}"
+    headers = { "Circle-Token": token }
+
+    waited = 0
+    while waited < max_wait_seconds:
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            raise Exception(f"Gagal mengambil status workflow: {response.text}")
+        data = response.json()
+        status = data.get("status", "unknown")
+        if status in ["success", "failed", "error", "failing", "canceled", "unauthorized"]:
+            return data
+        print(f"🔄 Workflow masih {status}, tunggu {interval} detik...")
+        time.sleep(interval)
+        waited += interval
+
+    raise TimeoutError(f"Workflow tidak selesai dalam {max_wait_seconds} detik.")
+
+# 5. Tunggu status final
+workflow_data = get_final_workflow_status(workflow_id, circleci_token)
+
+# 6. Ambil data job dari API
 url = f"https://circleci.com/api/v2/workflow/{workflow_id}/job"
-headers = {
-    "Circle-Token": circleci_token
-}
+headers = { "Circle-Token": circleci_token }
 response = requests.get(url, headers=headers)
 response.raise_for_status()
 jobs = response.json().get("items", [])
 
+# 7. Fungsi menghitung durasi job
 def calculate_duration(started_at, stopped_at):
     try:
         start = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
@@ -74,7 +69,7 @@ def calculate_duration(started_at, stopped_at):
     except:
         return "-"
 
-# Tulis satu baris untuk setiap job dalam workflow
+# 8. Simpan data ke Google Sheet
 for job in jobs:
     job_name = job.get("name", "-")
     status = job.get("status", "-")
@@ -95,4 +90,4 @@ for job in jobs:
     ]
     sheet.append_row(row)
 
-print("✅ Deployment job statuses successfully written to Google Sheets.")
+print("✅ Semua job deployment berhasil dicatat ke Google Sheets.")
