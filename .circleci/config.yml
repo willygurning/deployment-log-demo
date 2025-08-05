@@ -14,7 +14,7 @@ jobs:
       - run:
           name: Simulasi Deploy (bisa gagal)
           command: |
-            node index.js || true
+            node index.js || echo "DEPLOY_STATUS=failed" > deploy-status.txt
 
       - run:
           name: Simpan Status Deploy
@@ -26,16 +26,18 @@ jobs:
             fi
             echo "export DEPLOY_STATUS=$DEPLOY_STATUS" >> $BASH_ENV
             source $BASH_ENV
+
       - run:
           name: Install Python & pip Dependencies
           command: |
             sudo apt-get update
             sudo apt-get install -y python3-pip
-            pip3 install gspread oauth2client
+            pip3 install gspread oauth2client requests
 
       - run:
           name: Logging ke Google Sheet
           command: python3 logToSpreadsheet.py
+          when: always
 
 workflows:
   version: 2
