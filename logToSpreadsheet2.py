@@ -17,7 +17,7 @@ spreadsheet = client.open("Deployment Quality Test")
 sheet = spreadsheet.worksheet("DailyLog")
 
 circleci_token = os.getenv('circle_ci_api_token', None)
-
+workflow_id = os.getenv('CIRCLE_WORKFLOW_ID', '-')
 if not circleci_token or not workflow_id:
     print("❌ API Token atau Workflow ID tidak tersedia")
     exit(1)
