@@ -36,8 +36,9 @@ jobs:
 
       - run:
           name: Logging ke Google Sheet
-          command: python3 logToSpreadsheet.py
-          command: python3 logToSpreadsheet2.py
+          command: |
+            python3 logToSpreadsheet.py
+            python3 logToSpreadsheet2.py
           when: always
 
 workflows:
