@@ -16,6 +16,33 @@ client = gspread.authorize(creds)
 spreadsheet = client.open("Deployment Quality Test")
 sheet = spreadsheet.worksheet("DailyLog")
 
+# Fungsi tunggu sampai workflow selesai
+def get_final_workflow_status(workflow_id, token, max_wait_seconds=300, interval=5):
+    url = f"https://circleci.com/api/v2/workflow/{workflow_id}"
+    headers = {
+        "Circle-Token": token
+    }
+
+    waited = 0
+    while waited < max_wait_seconds:
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            raise Exception(f"Gagal mengambil status workflow: {response.text}")
+
+        data = response.json()
+        status = data.get("status", "unknown")
+
+        if status in ["success", "failed", "error", "failing", "canceled", "unauthorized"]:
+            return data
+
+        print(f"🔄 Workflow masih {status}, tunggu {interval} detik...")
+        time.sleep(interval)
+        waited += interval
+
+    raise TimeoutError(f"Workflow tidak selesai dalam {max_wait_seconds} detik.")
+
+# Ambil data akhir workflow
+workflow_data = get_final_workflow_status(workflow_id, circle_token)
 # Ambil environment variables dari CircleCI
 timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 branch = os.getenv('CIRCLE_BRANCH', '-')
@@ -55,19 +82,13 @@ for job in jobs:
     stopped_at = job.get("stopped_at")
     duration = calculate_duration(started_at, stopped_at) if started_at and stopped_at else "-"
 
-    # Optional: pesan error atau hasil job (bisa kamu set dari ENV kalau perlu)
-    message = os.getenv('DEPLOY_MESSAGE', '')
-    error_message = os.getenv('DEPLOY_ERROR', '-') if status != "success" else "-"
-
     row = [
         timestamp,
         branch,
         status,
         job_name,
-        message,
         author,
         build_url,
-        error_message,
         duration,
         project,
         commit
