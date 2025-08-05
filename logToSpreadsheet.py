@@ -30,30 +30,6 @@ if not circleci_token or not workflow_id:
     print("❌ API Token atau Workflow ID tidak tersedia")
     exit(1)
 
-def get_final_workflow_status(workflow_id, circleci_token, max_retries=30, sleep_sec=5):
-    headers = {
-        "Circle-Token": circleci_token
-    }
-
-    url = f"https://circleci.com/api/v2/workflow/{workflow_id}"
-
-    for attempt in range(max_retries):
-        resp = requests.get(url, headers=headers)
-        data = resp.json()
-
-        status = data.get("status")
-        print(f"🔄 Status sekarang: {status} (percobaan ke-{attempt + 1})")
-
-        if status in ("success", "failed", "error", "failing", "canceled", "unauthorized"):
-            return data  # Status akhir ditemukan
-
-        time.sleep(sleep_sec)
-
-    print("⚠️ Timeout menunggu workflow selesai.")
-    return {"status": "timeout"}
-
-workflow_data = get_final_workflow_status(workflow_id, circleci_token)
-workflow_status = workflow_data.get("status", "unknown")
 # 6. Ambil data job dari API
 url = f"https://circleci.com/api/v2/workflow/{workflow_id}/job"
 headers = { "Circle-Token": circleci_token }
