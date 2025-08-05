@@ -41,8 +41,9 @@ for job in jobs:
     duration = calculate_duration(started_at, stopped_at) if started_at and stopped_at else "-"
 
 row = [
+    status,
     duration,
-    project,
+    project
 ]
 sheet.append_row(row)
 

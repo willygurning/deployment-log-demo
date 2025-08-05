@@ -28,7 +28,6 @@ build_url = os.getenv('CIRCLE_BUILD_URL', '-')
 row = [
     timestamp,
     branch,
-    status,
     job_name,
     author,
     build_url,
