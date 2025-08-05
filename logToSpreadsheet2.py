@@ -6,6 +6,12 @@ import json
 import requests
 import time
 
+# 1. Load Google credentials dari environment
+creds_dict = json.loads(os.environ['google_credentials'])
+scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+client = gspread.authorize(creds)
+
 # 2. Inisialisasi Google Sheet
 spreadsheet = client.open("Deployment Quality Test")
 sheet = spreadsheet.worksheet("DailyLog")
