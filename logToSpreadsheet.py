@@ -30,29 +30,30 @@ if not circleci_token or not workflow_id:
     print("❌ API Token atau Workflow ID tidak tersedia")
     exit(1)
 
-# 4. Fungsi: Tunggu hingga workflow selesai
-def get_final_workflow_status(workflow_id, token, max_wait_seconds=300, interval=5):
+def get_final_workflow_status(workflow_id, circleci_token, max_retries=30, sleep_sec=5):
+    headers = {
+        "Circle-Token": circleci_token
+    }
+
     url = f"https://circleci.com/api/v2/workflow/{workflow_id}"
-    headers = { "Circle-Token": token }
 
-    waited = 0
-    while waited < max_wait_seconds:
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            raise Exception(f"Gagal mengambil status workflow: {response.text}")
-        data = response.json()
-        status = data.get("status", "unknown")
-        if status in ["success", "failed", "error", "failing", "canceled", "unauthorized"]:
-            return data
-        print(f"🔄 Workflow masih {status}, tunggu {interval} detik...")
-        time.sleep(interval)
-        waited += interval
+    for attempt in range(max_retries):
+        resp = requests.get(url, headers=headers)
+        data = resp.json()
 
-    raise TimeoutError(f"Workflow tidak selesai dalam {max_wait_seconds} detik.")
+        status = data.get("status")
+        print(f"🔄 Status sekarang: {status} (percobaan ke-{attempt + 1})")
 
-# 5. Tunggu status final
+        if status in ("success", "failed", "error", "failing", "canceled", "unauthorized"):
+            return data  # Status akhir ditemukan
+
+        time.sleep(sleep_sec)
+
+    print("⚠️ Timeout menunggu workflow selesai.")
+    return {"status": "timeout"}
+
 workflow_data = get_final_workflow_status(workflow_id, circleci_token)
-
+workflow_status = workflow_data.get("status", "unknown")
 # 6. Ambil data job dari API
 url = f"https://circleci.com/api/v2/workflow/{workflow_id}/job"
 headers = { "Circle-Token": circleci_token }
