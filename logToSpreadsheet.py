@@ -24,7 +24,7 @@ workflow_id = os.getenv('CIRCLE_WORKFLOW_ID', '-')
 project = os.getenv('CIRCLE_PROJECT_REPONAME', '-')
 author = os.getenv('CIRCLE_USERNAME', '-')
 build_url = os.getenv('CIRCLE_BUILD_URL', '-')
-circleci_token = os.getenv('CIRCLECI_API_TOKEN', None)
+circleci_token = os.getenv('circle_ci_api_token', None)
 
 if not circleci_token or not workflow_id:
     print("❌ API Token atau Workflow ID tidak tersedia")
