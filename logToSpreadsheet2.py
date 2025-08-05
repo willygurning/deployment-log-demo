@@ -40,10 +40,10 @@ for job in jobs:
     stopped_at = job.get("stopped_at")
     duration = calculate_duration(started_at, stopped_at) if started_at and stopped_at else "-"
 
-    row = [
-        duration,
-        project,
-    ]
-    sheet.append_row(row)
+row = [
+    duration,
+    project,
+]
+sheet.append_row(row)
 
 print("✅ Semua job deployment berhasil dicatat ke Google Sheets.")

@@ -25,15 +25,15 @@ project = os.getenv('CIRCLE_PROJECT_REPONAME', '-')
 author = os.getenv('CIRCLE_USERNAME', '-')
 build_url = os.getenv('CIRCLE_BUILD_URL', '-')
 
-    row = [
-        timestamp,
-        branch,
-        status,
-        job_name,
-        author,
-        build_url,
-        commit
-    ]
-    sheet.append_row(row)
+row = [
+    timestamp,
+    branch,
+    status,
+    job_name,
+    author,
+    build_url,
+    commit
+]
+sheet.append_row(row)
 
 print("✅ Semua job deployment berhasil dicatat ke Google Sheets.")
