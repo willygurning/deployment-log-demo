@@ -38,6 +38,13 @@ def calculate_duration(started_at, stopped_at):
     except:
         return "-"
 
+# 8. Cari baris berdasarkan workflow_id
+cell = sheet.find(workflow_id)
+if not cell:
+    print("❌ Workflow ID tidak ditemukan di Google Sheet.")
+    exit(1)
+
+row_index = cell.row
 # 8. Simpan data ke Google Sheet
 for job in jobs:
     job_name = job.get("name", "-")
@@ -46,11 +53,7 @@ for job in jobs:
     stopped_at = job.get("stopped_at")
     duration = calculate_duration(started_at, stopped_at) if started_at and stopped_at else "-"
 
-row = [
-    status,
-    duration,
-    job_name
-]
-sheet.append_row(row)
+status_string = "\n".join(status_info)
+sheet.update_cell(row_index, 8, status_string)
 
-print("✅ Semua job deployment berhasil dicatat ke Google Sheets.")
+print("✅ Semua status job berhasil diupdate di baris yang sama.")

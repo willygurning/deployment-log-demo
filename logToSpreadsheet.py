@@ -31,7 +31,8 @@ row = [
     project,
     author,
     build_url,
-    commit
+    commit,
+    workflow_id
 ]
 sheet.append_row(row)
 
