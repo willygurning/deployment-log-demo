@@ -46,6 +46,7 @@ if not cell:
 
 row_index = cell.row
 # 8. Simpan data ke Google Sheet
+status_info = []
 for job in jobs:
     job_name = job.get("name", "-")
     status = job.get("status", "-")
