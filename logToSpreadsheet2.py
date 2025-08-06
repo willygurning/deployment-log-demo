@@ -52,7 +52,7 @@ for job in jobs:
     started_at = job.get("started_at")
     stopped_at = job.get("stopped_at")
     duration = calculate_duration(started_at, stopped_at) if started_at and stopped_at else "-"
-
+    status_info.append(f"{job_name}: {status} ({duration})")
 status_string = "\n".join(status_info)
 sheet.update_cell(row_index, 8, status_string)
 
