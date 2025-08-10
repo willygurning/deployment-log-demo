@@ -4,7 +4,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime, timezone
 
 # ==== CONFIGURATION ====
-CIRCLECI_TOKEN = ""
+CIRCLECI_TOKEN = token
 PROJECT_SLUG = "gh/willygurning/deployment-log-demo"
 BRANCH = "main"
 SPREADSHEET_NAME = "Deployment Quality Test"
