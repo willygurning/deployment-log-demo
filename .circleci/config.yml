@@ -13,7 +13,7 @@ jobs:
             pip install -r requirements.txt
       - run:
           name: Run logging script
-          command: python logToSpreadsheet.py
+          command: python logToSpreadsheet12.py
 
 workflows:
   manual-run:
