@@ -21,7 +21,7 @@ workflows:
       - schedule:
           # Cron format: minute hour day month day-of-week
           # "0 1 * * *" = setiap hari jam 01:00 UTC (08:00 WIB)
-          cron: "*/5 * * * *"
+          cron: "0 8 * * *"
           filters:
             branches:
               only:
