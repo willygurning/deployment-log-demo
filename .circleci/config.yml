@@ -1,48 +1,30 @@
 version: 2.1
 
 jobs:
-  deploy:
+  log-deployment:
     docker:
-      - image: cimg/node:18.17.1
+      - image: cimg/python:3.11
     steps:
       - checkout
-
       - run:
-          name: Install Dependencies
-          command: npm install
-
-      - run:
-          name: Simulasi Deploy (bisa gagal)
+          name: Install dependencies
           command: |
-            node index.js || echo "DEPLOY_STATUS=failed" > deploy-status.txt
-
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
       - run:
-          name: Simpan Status Deploy
-          command: |
-            if [ -f deploy-status.txt ]; then
-              DEPLOY_STATUS=$(cat deploy-status.txt | grep DEPLOY_STATUS | cut -d '=' -f2)
-            else
-              DEPLOY_STATUS="success"
-            fi
-            echo "export DEPLOY_STATUS=$DEPLOY_STATUS" >> $BASH_ENV
-            source $BASH_ENV
-
-      - run:
-          name: Install Python & pip Dependencies
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y python3-pip
-            pip3 install gspread oauth2client requests
-
-      - run:
-          name: Logging ke Google Sheet
-          command: |
-            python3 logToSpreadsheet.py
-            python3 logToSpreadsheet2.py
-          when: always
+          name: Run logging script
+          command: python logToSpreadsheet12.py
 
 workflows:
-  version: 2
-  deploy_and_log:
+  scheduled-logging:
+    triggers:
+      - schedule:
+          # Cron format: minute hour day month day-of-week
+          # "0 1 * * *" = setiap hari jam 01:00 UTC (08:00 WIB)
+          cron: "*/5 * * * *"
+          filters:
+            branches:
+              only:
+                - master   # workflow jalan hanya di branch master
     jobs:
-      - deploy
+      - log-deployment
