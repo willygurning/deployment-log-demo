@@ -16,6 +16,6 @@ jobs:
           command: python logToSpreadsheet12.py
 
 workflows:
-  manual-run:
+  logging-deployment-data:
     jobs:
       - log-deployment
