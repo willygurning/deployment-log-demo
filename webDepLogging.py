@@ -6,7 +6,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime, timezone
 
 # ==== CONFIGURATION ====
-CIRCLECI_TOKEN = os.getenv("circle_ci_api_token")  # ambil dari env
+CIRCLECI_TOKEN = os.getenv("circle_ci_api_token") 
 PROJECT_SLUG = "gh/oyindonesia/webrepo"
 SPREADSHEET_NAME = "Deployment Quality Q3"
 
