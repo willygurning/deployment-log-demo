@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 # ==== CONFIGURATION ====
 CIRCLECI_TOKEN = os.getenv("circle_ci_api_token")
-PROJECT_SLUG = "gh/oyindonesia/javrepo"
+PROJECT_SLUG = "gh/oyindonesia/javarepo"
 SPREADSHEET_NAME = "Deployment Quality Q3"
 
 if not CIRCLECI_TOKEN:
